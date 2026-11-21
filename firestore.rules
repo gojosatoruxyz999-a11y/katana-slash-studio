@@ -1,0 +1,111 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidProjectBackup(data) {
+      return data.userId is string &&
+             data.userId.size() >= 1 &&
+             data.userId.size() <= 128 &&
+             data.title is string &&
+             data.title.size() >= 1 &&
+             data.title.size() <= 100 &&
+             data.projectType is string &&
+             data.projectType.size() >= 1 &&
+             data.projectType.size() <= 20 &&
+             data.projectType in ['ANIMATION', 'DRAWING', 'VIDEO', 'SOUND'] &&
+             data.fps is int &&
+             data.fps >= 1 &&
+             data.fps <= 60 &&
+             data.aspectRatio is string &&
+             data.aspectRatio.size() >= 1 &&
+             data.aspectRatio.size() <= 20 &&
+             data.sourceUpdatedAtMs is int &&
+             data.sourceUpdatedAtMs >= 0 &&
+             data.onionSkin is map &&
+             data.frames is list &&
+             data.frames.size() <= 120 &&
+             (data.frames.size() == 0 || data.frames[0] is map) &&
+             data.videoClips is list &&
+             data.videoClips.size() <= 50 &&
+             (data.videoClips.size() == 0 || data.videoClips[0] is map) &&
+             data.audioClips is list &&
+             data.audioClips.size() <= 50 &&
+             (data.audioClips.size() == 0 || data.audioClips[0] is map) &&
+             data.framesCount is int &&
+             data.framesCount >= 0 &&
+             data.framesCount <= 120 &&
+             data.videoClipsCount is int &&
+             data.videoClipsCount >= 0 &&
+             data.videoClipsCount <= 50 &&
+             data.audioClipsCount is int &&
+             data.audioClipsCount >= 0 &&
+             data.audioClipsCount <= 50;
+    }
+
+    match /users/{userId}/project_backups/{projectId} {
+      allow get: if isOwner(userId) && isValidId(userId) && isValidId(projectId);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidId(projectId) &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll([
+                         'userId', 'title', 'projectType', 'fps', 'aspectRatio',
+                         'sourceUpdatedAtMs', 'onionSkin', 'frames', 'videoClips', 'audioClips',
+                         'framesCount', 'videoClipsCount', 'audioClipsCount', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'title', 'projectType', 'fps', 'aspectRatio',
+                         'sourceUpdatedAtMs', 'onionSkin', 'frames', 'videoClips', 'audioClips',
+                         'framesCount', 'videoClipsCount', 'audioClipsCount', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       incoming().updatedAt is timestamp &&
+                       incoming().updatedAt <= request.time &&
+                       isValidProjectBackup(incoming());
+
+      allow update: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidId(projectId) &&
+                       isValidProjectBackup(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().updatedAt is timestamp &&
+                       incoming().updatedAt <= request.time &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'title', 'projectType', 'fps', 'aspectRatio',
+                         'sourceUpdatedAtMs', 'onionSkin', 'frames', 'videoClips', 'audioClips',
+                         'framesCount', 'videoClipsCount', 'audioClipsCount', 'updatedAt'
+                       ]);
+
+      allow delete: if isOwner(userId) && isValidId(userId) && isValidId(projectId);
+    }
+  }
+}

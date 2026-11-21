@@ -1,0 +1,97 @@
+{
+  "entities": {
+    "ProjectBackup": {
+      "title": "ProjectBackup",
+      "description": "Cloud backup snapshot of a RONIN STUDIO creative project stored under the owner's user account.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the project owner."
+        },
+        "title": {
+          "type": "string",
+          "description": "Display title of the backed-up project (1-100 chars)."
+        },
+        "projectType": {
+          "type": "string",
+          "enum": ["ANIMATION", "DRAWING", "VIDEO", "SOUND"],
+          "description": "Studio module type for the project."
+        },
+        "fps": {
+          "type": "integer",
+          "description": "Frame rate of the project (1-60)."
+        },
+        "aspectRatio": {
+          "type": "string",
+          "description": "Canvas/export aspect ratio (e.g. 16:9)."
+        },
+        "sourceUpdatedAtMs": {
+          "type": "integer",
+          "description": "Local Room DB modification timestamp in epoch milliseconds."
+        },
+        "onionSkin": {
+          "type": "object",
+          "description": "Native map of onion skin configuration settings."
+        },
+        "frames": {
+          "type": "array",
+          "description": "Native list of animation/drawing frame maps with layers and strokes."
+        },
+        "videoClips": {
+          "type": "array",
+          "description": "Native list of video editor clip maps including trim, keyframes, and motion blur."
+        },
+        "audioClips": {
+          "type": "array",
+          "description": "Native list of sound studio audio clip maps."
+        },
+        "framesCount": {
+          "type": "integer",
+          "description": "Total number of frames in the backup."
+        },
+        "videoClipsCount": {
+          "type": "integer",
+          "description": "Total number of video clips in the backup."
+        },
+        "audioClipsCount": {
+          "type": "integer",
+          "description": "Total number of audio clips in the backup."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the backup was first created (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of the latest backup update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "title",
+        "projectType",
+        "fps",
+        "aspectRatio",
+        "sourceUpdatedAtMs",
+        "onionSkin",
+        "frames",
+        "videoClips",
+        "audioClips",
+        "framesCount",
+        "videoClipsCount",
+        "audioClipsCount",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/project_backups/{projectId}": {
+      "schema": { "$ref": "#/entities/ProjectBackup" },
+      "description": "Per-user isolated cloud backups for RONIN STUDIO projects."
+    }
+  }
+}

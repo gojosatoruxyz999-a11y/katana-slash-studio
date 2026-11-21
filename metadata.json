@@ -1,0 +1,6 @@
+{
+  "name": "RONIN STUDIO",
+  "description": "All-in-one anime creator studio with frame-by-frame animation, onion skinning, drawing canvas, video & sound tools, and local project management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

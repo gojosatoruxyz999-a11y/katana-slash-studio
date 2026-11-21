@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">RONIN STUDIO</string>
+    <string name="cd_back">Navigate back</string>
+    <string name="cd_play_pause">Play or pause animation</string>
+    <string name="cd_onion_skin">Toggle onion skinning</string>
+    <string name="cd_add_frame">Add new frame</string>
+    <string name="cd_undo">Undo last stroke</string>
+    <string name="cd_redo">Redo stroke</string>
+</resources>
